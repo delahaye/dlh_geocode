@@ -20,7 +20,17 @@
         "contao/core": ">=3.2,<4",
         "contao-community-alliance/composer-installer": "*"
     },
+    "autoload": {
+        "classmap": [""]
+    },
     "replace": {
         "contao-legacy/dlh_geocode": "*"
+    },
+    "extra": {
+        "contao": {
+            "sources": {
+                "": "system/modules/dlh_geocode"
+            }
+        }
     }
 }
