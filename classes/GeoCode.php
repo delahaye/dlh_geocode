@@ -84,6 +84,8 @@ class GeoCode
     private $arrGeocodeCache = array();
     protected function geoCode($varAddress, $blnReturnAll = false, $strLang = 'de', $strRegion = 'de', array $arrBounds = null)
     {
+        if(ini_get('allow_url_fopen') != 1)
+            return;
 
         if(is_array($varAddress))
             $varAddress = implode(' ', $varAddress);
