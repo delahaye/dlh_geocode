@@ -116,6 +116,7 @@ class GeoCode
         if(!isset($this->arrGeocodeCache[$strURL])) {
             $arrGeo = json_decode(file_get_contents($strURL), true);
 			self::errorHandler($arrGeo['status'], $arrGeo['error_message']);
+
 			$this->arrGeocodeCache[$strURL] = $arrGeo['status'] == 'OK' ? $arrGeo['results'] : false;
         }
 
@@ -149,8 +150,9 @@ class GeoCode
                 $xml = new \SimpleXMLElement($curlVal);
                 if($xml)
                 {
-					self::errorHandler($xml->status, $xml->error_message);
-					$strValue = $xml->result->geometry->location->lat . ',' . $xml->result->geometry->location->lng;
+                    self::errorHandler($xml->status, $xml->error_message);
+
+   					$strValue = $xml->result->geometry->location->lat . ',' . $xml->result->geometry->location->lng;
                 }
             }
         }
