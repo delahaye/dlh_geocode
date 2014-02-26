@@ -115,9 +115,8 @@ class GeoCode
 
         if(!isset($this->arrGeocodeCache[$strURL])) {
             $arrGeo = json_decode(file_get_contents($strURL), true);
-			self::errorHandler($arrGeo['status'], $arrGeo['error_message']);
-
-			$this->arrGeocodeCache[$strURL] = $arrGeo['status'] == 'OK' ? $arrGeo['results'] : false;
+            self::errorHandler($arrGeo['status'], $arrGeo['error_message']);
+            $this->arrGeocodeCache[$strURL] = $arrGeo['status'] == 'OK' ? $arrGeo['results'] : false;
         }
 
         if(!$this->arrGeocodeCache[$strURL])
@@ -151,8 +150,7 @@ class GeoCode
                 if($xml)
                 {
                     self::errorHandler($xml->status, $xml->error_message);
-
-   					$strValue = $xml->result->geometry->location->lat . ',' . $xml->result->geometry->location->lng;
+                    $strValue = $xml->result->geometry->location->lat . ',' . $xml->result->geometry->location->lng;
                 }
             }
         }
