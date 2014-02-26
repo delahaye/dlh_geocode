@@ -158,23 +158,23 @@ class GeoCode
         return $strValue==',' ? '' : $strValue;
     }
 
-	/**
-	 * handle the google maps api error states and show them in the backend
-	 * @param $strStatus
-	 * @param $strMessage
-	 */
-	protected static function errorHandler($strStatus, $strMessage)
-	{
-		if(!$strStatus || $strStatus == 'OK')
-		{
-			return;
-		}
+    /**
+     * handle the google maps api error states and show them in the backend
+     * @param $strStatus
+     * @param $strMessage
+     */
+    protected static function errorHandler($strStatus, $strMessage)
+    {
+        if (!$strStatus || $strStatus == 'OK')
+        {
+            return;
+        }
 
-		$arrErrorMessages = array('ZERO_RESULTS', 'OVER_QUERY_LIMIT', 'REQUEST_DENIED', 'INVALID_REQUEST');
+        $arrErrorMessages = array('ZERO_RESULTS', 'OVER_QUERY_LIMIT', 'REQUEST_DENIED', 'INVALID_REQUEST');
 
-		if(in_array($strStatus, $arrErrorMessages))
-		{
-			\Message::addError($strStatus . ($strMessage ? " (" . $strMessage . ")" : ''));
-		}
-	}
+        if (in_array($strStatus, $arrErrorMessages))
+        {
+            \Message::addError($strStatus . ($strMessage ? " (" . $strMessage . ")" : ''));
+        }
+    }
 }
