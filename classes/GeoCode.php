@@ -115,6 +115,7 @@ class GeoCode
 
         if(!isset($this->arrGeocodeCache[$strURL])) {
             $arrGeo = json_decode(file_get_contents($strURL), true);
+            self::errorHandler($arrGeo['status'], $arrGeo['error_message']);
             $this->arrGeocodeCache[$strURL] = $arrGeo['status'] == 'OK' ? $arrGeo['results'] : false;
         }
 
@@ -148,6 +149,7 @@ class GeoCode
                 $xml = new \SimpleXMLElement($curlVal);
                 if($xml)
                 {
+                    self::errorHandler($xml->status, $xml->error_message);
                     $strValue = $xml->result->geometry->location->lat . ',' . $xml->result->geometry->location->lng;
                 }
             }
@@ -156,4 +158,23 @@ class GeoCode
         return $strValue==',' ? '' : $strValue;
     }
 
+    /**
+     * handle the google maps api error states and show them in the backend
+     * @param $strStatus
+     * @param $strMessage
+     */
+    protected static function errorHandler($strStatus, $strMessage)
+    {
+        if (!$strStatus || $strStatus == 'OK')
+        {
+            return;
+        }
+
+        $arrErrorMessages = array('ZERO_RESULTS', 'OVER_QUERY_LIMIT', 'REQUEST_DENIED', 'INVALID_REQUEST');
+
+        if (in_array($strStatus, $arrErrorMessages))
+        {
+            \Message::addError($strStatus . ($strMessage ? " (" . $strMessage . ")" : ''));
+        }
+    }
 }
