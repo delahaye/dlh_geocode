@@ -177,4 +177,50 @@ class GeoCode
             \Message::addError($strStatus . ($strMessage ? " (" . $strMessage . ")" : ''));
         }
     }
+
+
+    /**
+     * Provides a method that can be used for determining coordinates for a given address
+     * via DCA-callback in other modules, e.g. metamodels.
+     * @return string
+     */
+    public function callbackCoordinates()
+    {
+        $strAction = $GLOBALS['dlh_geocode']['address']['fieldformat']['action'];
+        $strIdParam = $GLOBALS['dlh_geocode']['address']['fieldformat']['name'];
+
+        $arrAddress = array();
+
+        foreach($GLOBALS['dlh_geocode']['address']['fields_address'] as $strField)
+        {
+            if($strIdParam)
+            {
+                if(!\Input::$strAction($strIdParam))
+                {
+                    // how Metamodels do it on creation, otherwise save twice to get coords
+                    $arrAddress[] = \Input::get('act')=='create' ? \Input::post(sprintf($strField, 'b')) : '';
+                }
+                else
+                {
+                    $arrAddress[] = \Input::post(sprintf($strField, \Input::$strAction($strIdParam)));
+                }
+            }
+            else
+            {
+                $arrAddress[] = \Input::post($strField);
+            }
+        }
+
+        if(!trim(implode('', $arrAddress)))
+        {
+            return '';
+        }
+
+        $strAddress = vsprintf($GLOBALS['dlh_geocode']['address']['format'], $arrAddress);
+        $strCountry = $GLOBALS['dlh_geocode']['address']['field_country'];
+        $strLang    = $GLOBALS['dlh_geocode']['address']['field_language'];
+
+        return self::getCoordinates($strAddress, $strCountry, $strLang);
+    }
+
 }
