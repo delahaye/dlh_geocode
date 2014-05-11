@@ -1,7 +1,7 @@
 Coordinates via callback
 ---
 
-To set a coordinates field on savineg, e.g. in a Metamodel, just integreate something similar to this in your dcaconfig.php file:
+To set a coordinates field on saving, e.g. in a Metamodel, just integreate something similar to this in your dcaconfig.php file:
 
 ```sh
 $GLOBALS['dlh_geocode']['address'] = array(
