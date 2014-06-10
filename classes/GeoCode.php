@@ -213,7 +213,8 @@ class GeoCode
 
         if(!trim(implode('', $arrAddress)))
         {
-            return '';
+            $geocode = \Input::post(sprintf($GLOBALS['dlh_geocode']['address']['field_geocode'], \Input::$strAction($strIdParam)));
+            return $geocode;
         }
 
         $strAddress = vsprintf($GLOBALS['dlh_geocode']['address']['format'], $arrAddress);
