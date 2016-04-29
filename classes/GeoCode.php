@@ -106,7 +106,7 @@ class GeoCode
         }
 
         $strURL = sprintf(
-            'https://maps.google.com/maps/api/geocode/json?address=%s&sensor=false&language=%s&region=%s&bounds=%s',
+            'https://maps.google.com/maps/api/geocode/json?address=%s&language=%s&region=%s&bounds=%s',
             urlencode($varAddress),
             urlencode($strLang),
             strlen($strRegion) ? urlencode($strRegion) : '',
@@ -137,7 +137,7 @@ class GeoCode
      */
     protected static function geoCodeCurl($strAddress, $strCountry)
     {
-        $strGeoURL = 'https://maps.google.com/maps/api/geocode/xml?address='.str_replace(' ', '+', $strAddress).'&sensor=false'.($strCountry ? '&region='.$strCountry : '');
+        $strGeoURL = 'https://maps.google.com/maps/api/geocode/xml?address='.str_replace(' ', '+', $strAddress).($strCountry ? '&region='.$strCountry : '');
 
         $curl = curl_init();
         if($curl)
