@@ -13,10 +13,10 @@
  */
 
 
-
 /**
  * Run in a custom namespace, so the class can be replaced
  */
+
 namespace delahaye;
 
 
@@ -24,6 +24,7 @@ namespace delahaye;
  * Class GeoCode
  *
  * Get geocoordinates for a given address by Google
+ *
  * @copyright  2014 de la Haye
  * @author     Christian de la Haye
  * @package    dlh_geocode
@@ -33,121 +34,168 @@ class GeoCode
 
     /**
      * Get instance
+     *
      * @return object
      */
     static protected $instance;
-    public static function getInstance() {
-        if(self::$instance == null) {
+
+    public static function getInstance()
+    {
+        if (self::$instance == null)
+        {
             self::$instance = new GeoCode();
         }
+
         return self::$instance;
     }
 
 
     /**
      * Get geo coordinates from an address
+     *
      * @param string
      * @param string
      * @param string
+     *
      * @return string
      */
-    public static function getCoordinates($strAddress, $strCountry = 'de', $strLang = 'de')
+    public static function getCoordinates($strAddress, $strCountry = 'de', $strLang = 'de', $key = null)
     {
+        if ($key === null)
+        {
+            $key = \Config::get('dlh_googlemaps_apikey');
+        }
+
         if ($strAddress)
         {
             $arrCoords = self::getInstance()->geoCode($strAddress, null, $strLang, $strCountry);
 
-            if($arrCoords)
+            if ($arrCoords)
             {
                 $strValue = $arrCoords['lat'] . ',' . $arrCoords['lng'];
             }
-            elseif(function_exists("curl_init"))
+            elseif (function_exists("curl_init"))
             {
-                $strValue = self::geoCodeCurl($strAddress, $strCountry);
+                $strValue = self::geoCodeCurl($strAddress, $strCountry, $key);
             }
         }
 
-        return $strValue==',' ? '' : $strValue;
+        return $strValue == ',' ? '' : $strValue;
     }
-
 
 
     /**
      * Get geo coordinates from address, thanks to Oliver Hoff <oliver@hofff.com>
+     *
      * @param array
      * @param bool
      * @param string
      * @param string
      * @param array
+     * @param string
+     *
      * @return array
      */
-    private $arrGeocodeCache = array();
-    protected function geoCode($varAddress, $blnReturnAll = false, $strLang = 'de', $strRegion = 'de', array $arrBounds = null)
-    {
-        if(ini_get('allow_url_fopen') != 1)
-            return;
+    private $arrGeocodeCache = [];
 
-        if(is_array($varAddress))
+    protected function geoCode($varAddress, $blnReturnAll = false, $strLang = 'de', $strRegion = 'de', array $arrBounds = null, $key = null)
+    {
+        if (ini_get('allow_url_fopen') != 1)
+        {
+            return;
+        }
+
+        if (is_array($varAddress))
+        {
             $varAddress = implode(' ', $varAddress);
+        }
 
         $varAddress = trim($varAddress);
 
-        if(!strlen($varAddress) || !strlen($strLang))
+        if (!strlen($varAddress) || !strlen($strLang))
+        {
             return;
+        }
 
-        if($strRegion !== null && !strlen($strRegion))
+        if ($strRegion !== null && !strlen($strRegion))
+        {
             return;
+        }
 
-        if($arrBounds !== null) {
-            if(!is_array($arrBounds) || !is_array($arrBounds['tl']) || !is_array($arrBounds['br'])
-                || !is_numeric($arrBounds['tl']['lat']) || !is_numeric($arrBounds['tl']['lng'])
-                || !is_numeric($arrBounds['br']['lat']) || !is_numeric($arrBounds['br']['lng']))
+        if ($arrBounds !== null)
+        {
+            if (!is_array($arrBounds) || !is_array($arrBounds['tl']) || !is_array($arrBounds['br'])
+                || !is_numeric($arrBounds['tl']['lat'])
+                || !is_numeric($arrBounds['tl']['lng'])
+                || !is_numeric($arrBounds['br']['lat'])
+                || !is_numeric($arrBounds['br']['lng'])
+            )
+            {
                 return;
+            }
         }
 
         $strURL = sprintf(
-            'http://maps.google.com/maps/api/geocode/json?address=%s&sensor=false&language=%s&region=%s&bounds=%s',
+            'http://maps.googleapis.com/maps/api/geocode/json?address=%s&language=%s&region=%s&bounds=%s',
             urlencode($varAddress),
             urlencode($strLang),
             strlen($strRegion) ? urlencode($strRegion) : '',
             $arrBounds ? implode(',', $arrBounds['tl']) . '|' . implode(',', $arrBounds['br']) : ''
         );
 
-        if(!isset($this->arrGeocodeCache[$strURL])) {
+        if($key !== null)
+        {
+            $strURL .= '&key=' . $key;
+        }
+
+        if (!isset($this->arrGeocodeCache[$strURL]))
+        {
             $arrGeo = json_decode(file_get_contents($strURL), true);
             self::errorHandler($arrGeo['status'], $arrGeo['error_message']);
             $this->arrGeocodeCache[$strURL] = $arrGeo['status'] == 'OK' ? $arrGeo['results'] : false;
         }
 
-        if(!$this->arrGeocodeCache[$strURL])
+        if (!$this->arrGeocodeCache[$strURL])
+        {
             return;
+        }
 
-        return $blnReturnAll ? $this->arrGeocodeCache[$strURL] : array(
-            'lat' => $this->arrGeocodeCache[$strURL][0]['geometry']['location']['lat'],
-            'lng' => $this->arrGeocodeCache[$strURL][0]['geometry']['location']['lng']
-        );
+        return $blnReturnAll
+            ? $this->arrGeocodeCache[$strURL]
+            : [
+                'lat' => $this->arrGeocodeCache[$strURL][0]['geometry']['location']['lat'],
+                'lng' => $this->arrGeocodeCache[$strURL][0]['geometry']['location']['lng'],
+            ];
     }
 
 
     /**
      * Get geo coordinates from address by CURL as fallback
+     *
      * @param string
      * @param string
+     * @param string|null
+     *
      * @return string
      */
-    protected static function geoCodeCurl($strAddress, $strCountry)
+    protected static function geoCodeCurl($strAddress, $strCountry, $key = null)
     {
-        $strGeoURL = 'http://maps.google.com/maps/api/geocode/xml?address='.str_replace(' ', '+', $strAddress).'&sensor=false'.($strCountry ? '&region='.$strCountry : '');
+        $strGeoURL = 'http://maps.googleapis.com/maps/api/geocode/xml?address=' . str_replace(' ', '+', $strAddress) . ($strCountry ? '&region=' . $strCountry : '');
+
+        if ($key !== null)
+        {
+            $strGeoURL .= '&key=' . $key;
+        }
 
         $curl = curl_init();
-        if($curl)
+        if ($curl)
         {
-            if(curl_setopt($curl, CURLOPT_URL, $strGeoURL) && curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1) && curl_setopt($curl, CURLOPT_HEADER, 0))
+            if (curl_setopt($curl, CURLOPT_URL, $strGeoURL) && curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1) && curl_setopt($curl, CURLOPT_HEADER, 0))
             {
                 $curlVal = curl_exec($curl);
                 curl_close($curl);
                 $xml = new \SimpleXMLElement($curlVal);
-                if($xml)
+                if ($xml)
                 {
                     self::errorHandler($xml->status, $xml->error_message);
                     $strValue = $xml->result->geometry->location->lat . ',' . $xml->result->geometry->location->lng;
@@ -155,11 +203,12 @@ class GeoCode
             }
         }
 
-        return $strValue==',' ? '' : $strValue;
+        return $strValue == ',' ? '' : $strValue;
     }
 
     /**
      * handle the google maps api error states and show them in the backend
+     *
      * @param $strStatus
      * @param $strMessage
      */
@@ -170,7 +219,7 @@ class GeoCode
             return;
         }
 
-        $arrErrorMessages = array('ZERO_RESULTS', 'OVER_QUERY_LIMIT', 'REQUEST_DENIED', 'INVALID_REQUEST');
+        $arrErrorMessages = ['ZERO_RESULTS', 'OVER_QUERY_LIMIT', 'REQUEST_DENIED', 'INVALID_REQUEST'];
 
         if (in_array($strStatus, $arrErrorMessages))
         {
@@ -182,23 +231,24 @@ class GeoCode
     /**
      * Provides a method that can be used for determining coordinates for a given address
      * via DCA-callback in other modules, e.g. metamodels.
+     *
      * @return string
      */
     public function callbackCoordinates()
     {
-        $strAction = $GLOBALS['dlh_geocode']['address']['fieldformat']['action'];
+        $strAction  = $GLOBALS['dlh_geocode']['address']['fieldformat']['action'];
         $strIdParam = $GLOBALS['dlh_geocode']['address']['fieldformat']['name'];
 
-        $arrAddress = array();
+        $arrAddress = [];
 
-        foreach($GLOBALS['dlh_geocode']['address']['fields_address'] as $strField)
+        foreach ($GLOBALS['dlh_geocode']['address']['fields_address'] as $strField)
         {
-            if($strIdParam)
+            if ($strIdParam)
             {
-                if(!\Input::$strAction($strIdParam))
+                if (!\Input::$strAction($strIdParam))
                 {
                     // how Metamodels do it on creation, otherwise save twice to get coords
-                    $arrAddress[] = \Input::get('act')=='create' ? \Input::post(sprintf($strField, 'b')) : '';
+                    $arrAddress[] = \Input::get('act') == 'create' ? \Input::post(sprintf($strField, 'b')) : '';
                 }
                 else
                 {
@@ -211,9 +261,10 @@ class GeoCode
             }
         }
 
-        if(!trim(implode('', $arrAddress)))
+        if (!trim(implode('', $arrAddress)))
         {
             $geocode = \Input::post(sprintf($GLOBALS['dlh_geocode']['address']['field_geocode'], \Input::$strAction($strIdParam)));
+
             return $geocode;
         }
 
