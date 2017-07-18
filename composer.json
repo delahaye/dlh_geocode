@@ -1,9 +1,9 @@
 {
-    "name": "delahaye/dlh_geocode",
+    "name": "heimrichhannot/dlh_geocode",
     "description":"Get geo coordinates from a given address",
     "keywords":["contao", "geo", "googlemaps"],
     "type": "contao-module",
-    "homepage":"https://github.com/delahaye/dlh_geocode",
+    "homepage":"https://github.com/heimrichhannot/dlh_geocode",
     "license":"LGPL-3.0+",
     "authors":[
         {
@@ -11,10 +11,16 @@
             "email":"service@delahaye.de",
             "homepage":"http://www.delahaye.de",
             "role":"Developer"
+        },
+	{
+            "name":"Heimrich & Hannot GmbH",
+            "email":"digitales@heimrich-hannot.de",
+            "homepage":"http://heimrich-hannot.de",
+            "role":"Developer"
         }
     ],
     "support":{
-        "issues":"https://github.com/delahaye/dlh_geocode/issues"
+        "issues":"https://github.com/heimrichhannot/dlh_geocode/issues"
     },
     "require": {
         "php": ">=5.6.0",
