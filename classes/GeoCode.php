@@ -8,6 +8,7 @@
  *
  * @package dlh_geocode
  * @author  Christian de la Haye
+ * @author  Ingolf Steinhardt <info@e-spin.de>
  * @link    http://delahaye.de
  * @license http://www.gnu.org/licenses/lgpl-3.0.html LGPL
  */
@@ -68,7 +69,7 @@ class GeoCode
 
         if ($strAddress)
         {
-            $arrCoords = self::getInstance()->geoCode($strAddress, null, $strLang, $strCountry);
+            $arrCoords = self::getInstance()->geoCode($strAddress, null, $strLang, $strCountry, null, $key);
 
             if ($arrCoords)
             {
