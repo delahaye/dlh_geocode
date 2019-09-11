@@ -68,7 +68,7 @@ class GeoCode
 
         if ($strAddress)
         {
-            $arrCoords = self::getInstance()->geoCode($strAddress, null, $strLang, $strCountry);
+            $arrCoords = self::getInstance()->geoCode($strAddress, null, $strLang, $strCountry, null, $key);
 
             if ($arrCoords)
             {
